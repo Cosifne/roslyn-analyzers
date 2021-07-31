@@ -36,31 +36,31 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray<DiagnosticDescriptor>.Empty.Add(MultipleEnumerableDescriptor);
 
-        private static readonly ImmutableArray<string> s_executedImmediateMethods = ImmutableArray<string>.Empty
-            .Add("System.Linq.Enumerable.Aggregate")
-            .Add("System.Linq.Enumerable.All")
-            .Add("System.Linq.Enumerable.Any")
-            .Add("System.Linq.Enumerable.Average")
-            .Add("System.Linq.Enumerable.Contains")
-            .Add("System.Linq.Enumerable.Count")
-            .Add("System.Linq.Enumerable.ElementAt")
-            .Add("System.Linq.Enumerable.ElementAtOrDefault")
-            .Add("System.Linq.Enumerable.First")
-            .Add("System.Linq.Enumerable.FirstOrDefault")
-            .Add("System.Linq.Enumerable.Last")
-            .Add("System.Linq.Enumerable.LastOrDefault")
-            .Add("System.Linq.Enumerable.LongCount")
-            .Add("System.Linq.Enumerable.Max")
-            .Add("System.Linq.Enumerable.Min")
-            .Add("System.Linq.Enumerable.SequenceEqual")
-            .Add("System.Linq.Enumerable.Single")
-            .Add("System.Linq.Enumerable.SingleOrDefault")
-            .Add("System.Linq.Enumerable.Sum")
-            .Add("System.Linq.Enumerable.ToArray")
-            .Add("System.Linq.Enumerable.ToDictionary")
-            .Add("System.Linq.Enumerable.ToHashSet")
-            .Add("System.Linq.Enumerable.ToList")
-            .Add("System.Linq.Enumerable.ToLookup");
+        public static readonly ImmutableArray<string> ExecutedImmediateMethods = ImmutableArray.Create(
+            "System.Linq.Enumerable.Aggregate",
+            "System.Linq.Enumerable.All",
+            "System.Linq.Enumerable.Any",
+            "System.Linq.Enumerable.Average",
+            "System.Linq.Enumerable.Contains",
+            "System.Linq.Enumerable.Count",
+            "System.Linq.Enumerable.ElementAt",
+            "System.Linq.Enumerable.ElementAtOrDefault",
+            "System.Linq.Enumerable.First",
+            "System.Linq.Enumerable.FirstOrDefault",
+            "System.Linq.Enumerable.Last",
+            "System.Linq.Enumerable.LastOrDefault",
+            "System.Linq.Enumerable.LongCount",
+            "System.Linq.Enumerable.Max",
+            "System.Linq.Enumerable.Min",
+            "System.Linq.Enumerable.SequenceEqual",
+            "System.Linq.Enumerable.Single",
+            "System.Linq.Enumerable.SingleOrDefault",
+            "System.Linq.Enumerable.Sum",
+            "System.Linq.Enumerable.ToArray",
+            "System.Linq.Enumerable.ToDictionary",
+            "System.Linq.Enumerable.ToHashSet",
+            "System.Linq.Enumerable.ToList",
+            "System.Linq.Enumerable.ToLookup");
 
         public override void Initialize(AnalysisContext context)
         {
@@ -69,12 +69,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             context.RegisterCompilationStartAction(CompilationStartAction);
         }
 
-        private void CompilationStartAction(CompilationStartAnalysisContext context)
+        private static void CompilationStartAction(CompilationStartAnalysisContext context)
         {
             context.RegisterOperationBlockAction(OperationBlockAction);
         }
 
-        private void OperationBlockAction(OperationBlockAnalysisContext context)
+        private static void OperationBlockAction(OperationBlockAnalysisContext context)
         {
             var iEnumerableType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1);
             if (iEnumerableType != null)
@@ -129,7 +129,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 context.Options,
                 MultipleEnumerableDescriptor,
                 pessimisticAnalysis: false,
-                trackingMethodNames: s_executedImmediateMethods,
+                trackingMethodNames: ExecutedImmediateMethods,
                 cancellationToken: context.CancellationToken);
             if (result == null)
             {
@@ -164,6 +164,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
         }
 
+        // TODO: if we decided to go inter-procedural analysis then this needs to be relax.
         private static ImmutableArray<IInvocationOperation> GetAllImmediateExecutedInvocationOperations(IOperation root, ITypeSymbol iEnumerableType)
             => root.Descendants().OfType<IInvocationOperation>().WhereAsArray(op => IsImmediateExecutedLinqOperation(op, iEnumerableType));
 
@@ -173,7 +174,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             var arguments = operation.Arguments;
 
             return targetMethod.IsExtensionMethod
-                   && s_executedImmediateMethods.Contains(targetMethod.ToDisplayString(InvocationCountAnalysis.MethodFullyQualifiedNameFormat))
+                   && ExecutedImmediateMethods.Contains(targetMethod.ToDisplayString(InvocationCountAnalysis.MethodFullyQualifiedNameFormat))
                    && !arguments.IsEmpty
                    && IsLocalIEnumerableOperation(arguments[0], iEnumerableType);
         }
