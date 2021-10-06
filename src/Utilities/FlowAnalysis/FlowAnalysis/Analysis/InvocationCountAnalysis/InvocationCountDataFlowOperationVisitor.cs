@@ -130,19 +130,18 @@ namespace Microsoft.CodeAnalysis.AnalyzerUtilities.FlowAnalysis.Analysis.Invocat
             InvocationCountAbstractValue defaultValue)
         {
             // TODO: Instead of hard code, this should be changed to a function.
-            if (_trackingMethodNames.Contains(method.ToDisplayString(InvocationCountAnalysis.MethodFullyQualifiedNameFormat))
-                && originalOperation is IInvocationOperation invocationOperation)
+            if (InvocationCountAnalysisHelper.CauseEnumeration(originalOperation))
             {
-                if (visitedInstance == null
-                    && method.IsExtensionMethod
-                    && !invocationOperation.Arguments.IsEmpty
-                    && AnalysisEntityFactory.TryCreate(invocationOperation.Arguments[0], out var analysisEntity))
-                {
-                    var existingValue = GetAbstractValue(analysisEntity);
-                    var newValue = InvocationCountValueDomain.Instance.Merge(existingValue, InvocationCountAbstractValue.OneTime);
-                    SetAbstractValue(analysisEntity, newValue);
-                    return newValue;
-                }
+                // if (visitedInstance == null
+                //     && method.IsExtensionMethod
+                //     && !invocationOperation.Arguments.IsEmpty
+                //     && AnalysisEntityFactory.TryCreate(invocationOperation.Arguments[0], out var analysisEntity))
+                // {
+                //     var existingValue = GetAbstractValue(analysisEntity);
+                //     var newValue = InvocationCountValueDomain.Instance.Merge(existingValue, InvocationCountAbstractValue.OneTime);
+                //     SetAbstractValue(analysisEntity, newValue);
+                //     return newValue;
+                // }
             }
 
             return base.VisitInvocation_NonLambdaOrDelegateOrLocalFunction(

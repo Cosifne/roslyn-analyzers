@@ -17,6 +17,7 @@ namespace Microsoft.CodeAnalysis.AnalyzerUtilities.FlowAnalysis.Analysis.Invocat
         InvocationCountBlockAnalysisResult,
         InvocationCountAbstractValue>
     {
+
         public static readonly SymbolDisplayFormat MethodFullyQualifiedNameFormat = new(
             globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
             typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
