@@ -279,14 +279,58 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 || (wellKnownSymbolsInfo.CustomizedLinqChainMethods != null && wellKnownSymbolsInfo.CustomizedLinqChainMethods.Contains(originalMethod));
         }
 
-        public static ImmutableArray<IMethodSymbol> GetEnumeratedMethods(WellKnownTypeProvider wellKnownTypeProvider,
+        public static void GetEnumeratedMethods(
+            WellKnownTypeProvider wellKnownTypeProvider,
             ImmutableArray<(string typeName, string methodName)> typeAndMethodNames,
-            ImmutableArray<string> linqMethodNames)
+            ImmutableArray<string> allOverloadEnumerateParameterLinqMethodNames,
+            ImmutableArray<string> predicateOverloadEnumeratedParameterLinqMethodNames,
+            ImmutableArray<string> avoidableEnumeratedParameterLinqMethodNames,
+            out ImmutableArray<IMethodSymbol> enumeratedParameterLinqMethods,
+            out ImmutableArray<IMethodSymbol> avoidableEnumeratedParameterLinqMethods)
         {
-            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            GetImmutableCollectionConversionMethods(wellKnownTypeProvider, typeAndMethodNames, builder);
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, linqMethodNames, builder);
-            return builder.ToImmutable();
+            using var enumeratedMethodsBuilder = ArrayBuilder<IMethodSymbol>.GetInstance();
+            using var avoidableEnumeratedMethodsBuilder = ArrayBuilder<IMethodSymbol>.GetInstance();
+            GetImmutableCollectionConversionMethods(wellKnownTypeProvider, typeAndMethodNames, enumeratedMethodsBuilder);
+
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, allOverloadEnumerateParameterLinqMethodNames, enumeratedMethodsBuilder);
+
+            GetAvoidableEnumeratedMethods(wellKnownTypeProvider, avoidableEnumeratedParameterLinqMethodNames, enumeratedMethodsBuilder, avoidableEnumeratedMethodsBuilder);
+            GetPredicateOverloadEnumeratedParameterMethods(wellKnownTypeProvider, predicateOverloadEnumeratedParameterLinqMethodNames, enumeratedMethodsBuilder);
+
+            enumeratedParameterLinqMethods = enumeratedMethodsBuilder.ToImmutable();
+            avoidableEnumeratedParameterLinqMethods = avoidableEnumeratedMethodsBuilder.ToImmutable();
+        }
+
+        private static void GetAvoidableEnumeratedMethods(
+            WellKnownTypeProvider wellKnownTypeProvider,
+            ImmutableArray<string> methodNames,
+            ArrayBuilder<IMethodSymbol> enumeratedMethodsBuilder,
+            ArrayBuilder<IMethodSymbol> avoidableEnumeratedMethodsBuilder)
+        {
+            foreach (var methodName in methodNames)
+            {
+                var symbol = DocumentationCommentId.GetSymbolsForDeclarationId(methodName, wellKnownTypeProvider.Compilation).Single();
+                if (symbol is IMethodSymbol methodSymbol)
+                {
+                    enumeratedMethodsBuilder.Add(methodSymbol);
+                    avoidableEnumeratedMethodsBuilder.Add(methodSymbol);
+                }
+            }
+        }
+
+        private static void GetPredicateOverloadEnumeratedParameterMethods(
+            WellKnownTypeProvider wellKnownTypeProvider,
+            ImmutableArray<string> methodsNames,
+            ArrayBuilder<IMethodSymbol> enumeratedMethodsBuilder)
+        {
+            foreach (var methodName in methodsNames)
+            {
+                var symbol = DocumentationCommentId.GetSymbolsForDeclarationId(methodName, wellKnownTypeProvider.Compilation).Single();
+                if (symbol is IMethodSymbol methodSymbol)
+                {
+                    enumeratedMethodsBuilder.Add(methodSymbol);
+                }
+            }
         }
 
         private static void GetImmutableCollectionConversionMethods(
