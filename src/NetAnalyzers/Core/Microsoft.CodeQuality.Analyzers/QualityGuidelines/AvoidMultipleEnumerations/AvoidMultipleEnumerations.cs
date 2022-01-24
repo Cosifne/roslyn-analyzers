@@ -50,25 +50,19 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Linq methods causing its parameters to be enumerated.
         /// </summary>
-        public static readonly ImmutableArray<string> s_enumeratedParametersLinqMethods = ImmutableArray.Create(
+        public static readonly ImmutableArray<string> s_allOverloadsEnumeratedParameterLinqMethods = ImmutableArray.Create(
             nameof(Enumerable.Aggregate),
             nameof(Enumerable.All),
-            nameof(Enumerable.Any),
             nameof(Enumerable.Average),
             nameof(Enumerable.Contains),
             nameof(Enumerable.Count),
-            nameof(Enumerable.DefaultIfEmpty),
             nameof(Enumerable.ElementAt),
             nameof(Enumerable.ElementAtOrDefault),
-            nameof(Enumerable.First),
-            nameof(Enumerable.FirstOrDefault),
             nameof(Enumerable.Last),
             nameof(Enumerable.LastOrDefault),
             nameof(Enumerable.LongCount),
             nameof(Enumerable.Max),
             nameof(Enumerable.Min),
-            nameof(Enumerable.Single),
-            nameof(Enumerable.SingleOrDefault),
             nameof(Enumerable.Sum),
             nameof(Enumerable.ToArray),
             nameof(Enumerable.ToDictionary),
@@ -89,6 +83,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             nameof(Enumerable.AsEnumerable),
             nameof(Enumerable.Cast),
             nameof(Enumerable.Distinct),
+            nameof(Enumerable.DefaultIfEmpty),
             nameof(Enumerable.GroupBy),
             nameof(Enumerable.OfType),
             nameof(Enumerable.OrderBy),
@@ -121,6 +116,20 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "TakeLast",
             "SkipLast");
 
+        private static readonly ImmutableArray<string> s_avoidableEnumeratedMethods = ImmutableArray.Create(
+            "M:System.Linq.Enumerable.Count``1(System.Collections.Generic.IEnumerable{``0})",
+            "M:System.Linq.Enumerable.ElementAt``1(System.Collections.Generic.IEnumerable{``0},System.Int32)",
+            "M:System.Linq.Enumerable.ElementAtOrDefault``1(System.Collections.Generic.IEnumerable{``0},System.Int32)",
+            "M:System.Linq.Enumerable.Last``1(System.Collections.Generic.IEnumerable{``0})",
+            "M:System.Linq.Enumerable.LastOrDefault``1(System.Collections.Generic.IEnumerable{``0})");
+
+        private static readonly ImmutableArray<string> s_predicateOverloadEnumeratedParameterLinqMethods = ImmutableArray.Create(
+            "M:System.Linq.Enumerable.Any``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})",
+            "M:System.Linq.Enumerable.First``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})",
+            "M:System.Linq.Enumerable.FirstOrDefault``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})",
+            "M:System.Linq.Enumerable.Single``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})",
+            "M:System.Linq.Enumerable.SingleOrDefault``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Boolean})");
+
         /// <summary>
         /// Special Linq methods that no effect on its parameter, and not return new IEnumerable instance.
         /// </summary>
@@ -145,7 +154,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         {
             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
             var deferredMethods = GetLinqMethods(wellKnownTypeProvider, s_deferParametersEnumeratedLinqMethods);
-            var enumeratedMethods = GetEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_enumeratedParametersLinqMethods);
+            GetEnumeratedMethods(
+                wellKnownTypeProvider,
+                s_immutableCollectionsTypeNamesAndConvensionMethods,
+                s_allOverloadsEnumeratedParameterLinqMethods,
+                s_predicateOverloadEnumeratedParameterLinqMethods,
+                s_avoidableEnumeratedMethods,
+                out var enumeratedMethods,
+                out var avoidableEnumeratedParameterLinqMethods);
             var noEffectLinqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_noEffectLinqChainMethods);
             var compilation = operationBlockStartAnalysisContext.Compilation;
             var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
@@ -158,7 +174,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 enumeratedMethods,
                 noEffectLinqChainMethods,
                 additionalDeferTypes,
-                getEnumeratorSymbols);
+                getEnumeratorSymbols,
+                avoidableEnumeratedParameterLinqMethods);
 
             var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
             operationBlockStartAnalysisContext.RegisterOperationAction(

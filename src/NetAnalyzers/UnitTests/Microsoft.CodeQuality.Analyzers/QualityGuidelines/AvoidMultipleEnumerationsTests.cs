@@ -3132,8 +3132,8 @@ End Namespace
         public void TestNet6AddedMethod()
         {
             // newly added method in .Net 6, currently can't found by unit tests
-            Assert.Contains("MaxBy", AvoidMultipleEnumerations.s_enumeratedParametersLinqMethods);
-            Assert.Contains("MinBy", AvoidMultipleEnumerations.s_enumeratedParametersLinqMethods);
+            Assert.Contains("MaxBy", AvoidMultipleEnumerations.s_allOverloadsEnumeratedParameterLinqMethods);
+            Assert.Contains("MinBy", AvoidMultipleEnumerations.s_allOverloadsEnumeratedParameterLinqMethods);
             Assert.Contains("Chunk", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
             Assert.Contains("DistinctBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
             Assert.Contains("ExceptBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
