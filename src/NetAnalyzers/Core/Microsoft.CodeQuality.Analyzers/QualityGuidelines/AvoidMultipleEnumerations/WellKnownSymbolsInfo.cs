@@ -40,18 +40,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         public ImmutableArray<IMethodSymbol> GetEnumeratorMethods { get; }
 
+        public ImmutableArray<IMethodSymbol> AvoidableEnumerationMethods { get; }
+
         public WellKnownSymbolsInfo(
             ImmutableArray<IMethodSymbol> deferredMethods,
             ImmutableArray<IMethodSymbol> enumeratedMethods,
             ImmutableArray<IMethodSymbol> noEffectLinqChainMethods,
             ImmutableArray<ITypeSymbol> additionalDeferredTypes,
-            ImmutableArray<IMethodSymbol> getEnumeratorMethods)
+            ImmutableArray<IMethodSymbol> getEnumeratorMethods,
+            ImmutableArray<IMethodSymbol> avoidableEnumerationMethods)
         {
             DeferredMethods = deferredMethods;
             EnumeratedMethods = enumeratedMethods;
             NoEffectLinqChainMethods = noEffectLinqChainMethods;
             AdditionalDeferredTypes = additionalDeferredTypes;
             GetEnumeratorMethods = getEnumeratorMethods;
+            AvoidableEnumerationMethods = avoidableEnumerationMethods;
         }
     }
 }
