@@ -163,12 +163,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
             var linqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_linqChainMethods);
             var noEnumerationMethods = GetLinqMethods(wellKnownTypeProvider, s_noEnumerationLinqMethods);
-            var enumeratedMethods = GetEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_enumeratedParametersLinqMethods);
-            var deferredMethods = GetLinqMethods(wellKnownTypeProvider, s_deferParametersEnumeratedLinqMethods);
             GetEnumeratedMethods(
                 wellKnownTypeProvider,
                 s_immutableCollectionsTypeNamesAndConvensionMethods,
-                s_allOverloadsEnumeratedParameterLinqMethods,
+                s_enumeratedParametersLinqMethods,
                 s_predicateOverloadEnumeratedParameterLinqMethods,
                 s_avoidableEnumeratedMethods,
                 out var enumeratedMethods,
@@ -204,7 +202,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 additionalDeferTypes,
                 getEnumeratorSymbols,
                 customizedNoEnumerationMethods,
-                customizedLinqChainMethods);
+                customizedLinqChainMethods,
                 avoidableEnumeratedParameterLinqMethods);
 
             var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
@@ -293,9 +291,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     // (Note: 2 is an aggressive way to report diagnostic, because it is not guaranteed that happens on all the code path)
                     if (trackedInvocationSet.EnumerationCount == InvocationCount.TwoOrMoreTime || trackedInvocationSet.Operations.Count > 1)
                     {
-                        foreach (var trackedOperation in trackedInvocationSet.Operations)
+                        var containsAvoidableOperation = trackedInvocationSet.Operations
+                            .Any(op => IsAvoidableInvocation(op, wellKnownSymbolsInfo));
+                        if (containsAvoidableOperation)
                         {
-                            diagnosticOperations.Add(trackedOperation);
+                            foreach (var trackedOperation in trackedInvocationSet.Operations)
+                            {
+                                diagnosticOperations.Add(trackedOperation);
+                            }
                         }
                     }
                 }

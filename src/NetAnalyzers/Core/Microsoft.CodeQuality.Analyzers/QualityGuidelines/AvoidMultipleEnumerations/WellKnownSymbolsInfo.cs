@@ -56,18 +56,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// User specified methods that would not enumerated its parameters and the return type is deferred type. The value comes from editorConfig.
         /// </summary>
         public SymbolNamesWithValueOption<Unit>? CustomizedLinqChainMethods { get; }
+
         public ImmutableArray<IMethodSymbol> AvoidableEnumerationMethods { get; }
 
-        public WellKnownSymbolsInfo(
-            ImmutableArray<IMethodSymbol> linqChainMethods,
-            ImmutableArray<IMethodSymbol> noEnumerationMethods,
-            ImmutableArray<IMethodSymbol> enumeratedMethods,
-            ImmutableArray<IMethodSymbol> noEffectLinqChainMethods,
-            ImmutableArray<ITypeSymbol> additionalDeferredTypes,
-            ImmutableArray<IMethodSymbol> getEnumeratorMethods,
-            SymbolNamesWithValueOption<Unit>? customizedNoEnumerationMethods,
-            SymbolNamesWithValueOption<Unit>? customizedLinqChainMethods,
-            ImmutableArray<IMethodSymbol> avoidableEnumerationMethods)
+        public WellKnownSymbolsInfo(ImmutableArray<IMethodSymbol> linqChainMethods, ImmutableArray<IMethodSymbol> noEnumerationMethods, ImmutableArray<IMethodSymbol> enumeratedMethods, ImmutableArray<IMethodSymbol> noEffectLinqChainMethods, ImmutableArray<ITypeSymbol> additionalDeferredTypes, ImmutableArray<IMethodSymbol> getEnumeratorMethods, SymbolNamesWithValueOption<Unit>? customizedNoEnumerationMethods, SymbolNamesWithValueOption<Unit>? customizedLinqChainMethods, ImmutableArray<IMethodSymbol> avoidableEnumerationMethods)
         {
             LinqChainMethods = linqChainMethods;
             NoEnumerationMethods = noEnumerationMethods;

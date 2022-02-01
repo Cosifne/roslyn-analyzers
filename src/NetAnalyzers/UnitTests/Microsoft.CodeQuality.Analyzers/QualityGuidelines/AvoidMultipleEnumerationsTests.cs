@@ -129,7 +129,7 @@ public class Bar
         IEnumerable<int> i = Enumerable.Range(1, 10);
         for (int k = 0; k < 100; k++)
         {
-            [|i|].Aggregate((m, n) => m + n);
+            [|i|].Count();
             j.Contains(100);
             [|i|].Contains(100);
         }
@@ -146,7 +146,7 @@ Namespace Ns
         Public Sub Goo(j As Integer())
             Dim i = Enumerable.Range(1, 10)
             For index = 1 To 10
-                [|i|].Aggregate(Function(m, n) m + n)
+                [|i|].Count()
                 j.Contains(100)
                 [|i|].Contains(100)
             Next
@@ -528,8 +528,8 @@ public class Bar
         IEnumerable<int> i = Enumerable.Range(1, 10);
         if (x == 1)
         {
-            [|i|].Union([|h|]).ToList();
-            [|i|].Join([|h|], n => n, n => n, (n, m) => n + m).ToList();
+            [|i|].Union([|h|]).Count();
+            [|i|].Join([|h|], n => n, n => n, (n, m) => n + m).Count();
         }
     }
 }";
@@ -544,8 +544,8 @@ Namespace Ns
         Public Sub Goo(h As IEnumerable(Of Integer), x As Integer)
             Dim i = Enumerable.Range(1, 10)
             If x = 1 Then
-                [|i|].Union([|h|]).ToList()
-                [|i|].Join([|h|], Function(n) n, Function(n) n, Function(m, n) m + n).ToList()
+                [|i|].Union([|h|]).Count()
+                [|i|].Join([|h|], Function(n) n, Function(n) n, Function(m, n) m + n).Count()
             End If
         End Sub
     End Class
@@ -568,21 +568,21 @@ public class Bar
         IEnumerable<int> i = Enumerable.Range(1, 10);
         if (b == 1)
         {
-            [|i|].SingleOrDefault();
+            [|i|].Count();
             c.Max();
         }
         else if (b == 3)
         {
-            [|i|].ToList();
+            [|i|].Count();
             c.Min();
         }
         else
         {
-            [|i|].Min();
+            [|i|].Count();
             c.Average();
         }
 
-        [|i|].Sum();
+        [|i|].Count();
         c.First();
     }
 }";
@@ -598,17 +598,17 @@ Namespace Ns
         Public Sub Goo(b As Integer, c As Integer())
             Dim i = Enumerable.Range(1, 10)
             If b = 1 Then
-                [|i|].SingleOrDefault()
+                [|i|].Count()
                 c.Max()
             Else If b = 3
-                [|i|].ToList()
+                [|i|].Count()
                 c.Min()
             Else
-                [|i|].Min()
+                [|i|].Count()
                 c.Average()
             End If
 
-            [|i|].Sum()
+            [|i|].Count()
             c.First()
         End Sub
     End Class
@@ -630,22 +630,22 @@ public class Bar
     {
         var i = Enumerable.Range(1, 10).ToArray();
         i.First();
-        [|j|].SingleOrDefault();
+        [|j|].Count();
 
         if (b == 1)
         {
             i.First();
-            [|j|].First();
+            [|j|].LastOrDefault();
         }
         else if (b == 3)
         {
             i.First();
-            [|j|].First();
+            [|j|].LastOrDefault();
         }
         else if (b == 5)
         {
             i.First();
-            [|j|].First();
+            [|j|].LastOrDefault();
         }
     }
 }";
@@ -660,17 +660,17 @@ Namespace Ns
         Public Sub Goo(b As Integer, j As IEnumerable(Of Integer))
             Dim i = Enumerable.Range(1, 10).ToArray()
             i.First()
-            [|j|].SingleOrDefault()
+            [|j|].Count()
 
             If b = 1 Then
                 i.First()
-                [|j|].First()
+                [|j|].LastOrDefault()
             Else If b = 3
                 i.First()
-                [|j|].First()
+                [|j|].LastOrDefault()
             Else
                 i.First()
-                [|j|].First()
+                [|j|].LastOrDefault()
             End If
         End Sub
     End Class
@@ -1762,10 +1762,10 @@ public class Bar
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
         Enumerable.First(predicate: x => x != 100, source: [|i|]);
-        [|i|].ToImmutableSortedSet();
+        [|i|].Count();
 
         Enumerable.First(predicate: x => x != 100, source: [|h|]);
-        [|h|].First();
+        [|h|].Count();
     }
 }";
 
@@ -1781,10 +1781,10 @@ Namespace Ns
         Public Sub Goo(h As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
             Enumerable.First(predicate:= Function(x) x <> 100, source:= [|i|])
-            [|i|].ToImmutableSortedSet()
+            [|i|].Count()
             
             Enumerable.First(predicate:= Function(x) x <> 100, source:= [|h|])
-            [|h|].First()
+            [|h|].Count()
         End Sub
     End Class
 End Namespace
@@ -2003,8 +2003,8 @@ public class Bar
 {
     public void Sub(IEnumerable<IEnumerable<int>> y)
     {
-        var a = [|y|].SelectMany(x => x).ToArray();
-        var b = [|y|].SelectMany(x => x.ToArray()).ToArray();
+        var a = [|y|].SelectMany(x => x).Count();
+        var b = [|y|].SelectMany(x => x.ToArray()).Count();
     }
 }";
             await VerifyCSharpAsync(csharpCode);
@@ -2016,8 +2016,8 @@ Imports System.Linq
 Namespace Ns
     Public Class Hoo
         Public Sub Goo(y As IEnumerable(Of IEnumerable(Of Integer)))
-            Dim a = [|y|].SelectMany(Function(x) x).ToArray()
-            Dim b = [|y|].SelectMany(Function(x) x.ToArray()).ToArray()
+            Dim a = [|y|].SelectMany(Function(x) x).Count()
+            Dim b = [|y|].SelectMany(Function(x) x.ToArray()).Count()
         End Sub
     End Class
 End Namespace
@@ -2037,8 +2037,8 @@ public class Bar
 {
     public void Sub(IEnumerable h)
     {
-        [|h|].OfType<int>().ToArray();
-        [|h|].Cast<int>().ToList();
+        [|h|].OfType<int>().Count();
+        [|h|].Cast<int>().Count();
     }
 }";
             await VerifyCSharpAsync(csharpCode);
@@ -2051,8 +2051,8 @@ Imports System.Linq
 Namespace Ns
     Public Class Hoo
         Public Sub Goo(h As IEnumerable)
-            [|h|].OfType(Of Integer).ToArray()
-            [|h|].Cast(Of Integer).ToList()
+            [|h|].OfType(Of Integer).Count()
+            [|h|].Cast(Of Integer).Count()
         End Sub
     End Class
 End Namespace
@@ -2071,7 +2071,7 @@ public class Bar
     public void Sub(IOrderedEnumerable<int> h)
     {
         [|h|].Where(i => i != 10).ToArray();
-        [|h|].ToList();
+        [|h|].Count();
     }
 }";
             await VerifyCSharpAsync(csharpCode);
@@ -2083,7 +2083,7 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo(h As IOrderedEnumerable(Of Integer))
             [|h|].Where(Function(i) i <> 10).ToArray()
-            [|h|].ToList()
+            [|h|].Count()
         End Sub
     End Class
 End Namespace
@@ -2136,7 +2136,7 @@ public class Bar
     public void Sub(IEnumerable<int> h)
     {
         var d = [|h|].ToArray();
-        var d2 = [|h|].ToArray();
+        var d2 = [|h|].Count();
 
         h = Enumerable.Range(1, 10);
         h.First();
@@ -2157,7 +2157,7 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo(h As IEnumerable(Of Integer))
             Dim d = [|h|].ToArray()
-            Dim d2 = [|h|].ToArray()
+            Dim d2 = [|h|].Count()
             
             h = Enumerable.Range(1, 10)
             h.First()
@@ -2230,7 +2230,7 @@ public class Bar
 {
     public void Sub(IEnumerable<int> h)
     {
-        [|h|].ToArray();
+        [|h|].Count();
         var c = h;
 
         [|c|].First();
@@ -2245,7 +2245,7 @@ Imports System.Linq
 Namespace Ns
     Public Class Hoo
         Public Sub Goo(h As IEnumerable(Of Integer))
-            [|h|].ToArray()
+            [|h|].Count()
             Dim c = h
             [|c|].First()
         End Sub
@@ -2285,8 +2285,8 @@ public class Bar
         }
         else
         {
-            var d = [|i|].First();
-            var d2 = [|h|].First();
+            var d = [|i|].Count();
+            var d2 = [|h|].Count();
         }
         
         foreach (var z in [|j|])
@@ -2321,8 +2321,8 @@ Namespace Ns
                 For Each x in [|m|]
                 Next
             Else
-                Dim d = [|i|].First()
-                Dim d2 = [|h|].First()
+                Dim d = [|i|].Count()
+                Dim d2 = [|h|].Count()
             End If
 
             For Each z in [|j|]
@@ -2478,7 +2478,7 @@ public class Bar
         var z = [|k|].Concat([|j|]).Concat(i);
         [|j|].ElementAt(10);
         z.ToArray();
-        [|k|].ToArray();
+        [|k|].ElementAt(10);
     }
 }";
             await VerifyCSharpAsync(csharpCode);
@@ -2493,7 +2493,7 @@ Namespace NS
             Dim z = [|k|].Concat([|j|]).Concat(i)
             [|j|].ElementAt(10)
             z.ToArray()
-            [|k|].ToArray()
+            [|k|].Count()
         End Sub
     End Class
 End Namespace";
@@ -2517,7 +2517,7 @@ public class Bar
         var z = i.Concat([|j|]).Concat([|k|]);
         [|j|].ElementAt(10);
         z.ToArray();
-        [|k|].ToArray();
+        [|k|].Count();
     }
 }";
             await VerifyCSharpAsync(csharpCode);
@@ -2533,7 +2533,7 @@ Namespace NS
             Dim z = i.Concat([|j|]).Concat([|k|])
             [|j|].ElementAt(10)
             z.ToArray()
-            [|k|].ToArray()
+            [|k|].Count()
         End Sub
     End Class
 End Namespace";
@@ -2752,8 +2752,8 @@ public class Bar
         var a = flag ? i : j;
         var b = a.Except(j);
 
-        [|b|].ToArray();
-        [|b|].ToArray();
+        [|b|].Count();
+        [|b|].Count();
     }
 }";
             await VerifyCSharpAsync(csharpCode);
@@ -2768,8 +2768,8 @@ Namespace NS
             Dim a = If(flag, i, j)
             Dim b = a.Except(j)
 
-            [|b|].ToArray()
-            [|b|].ToArray()
+            [|b|].Count()
+            [|b|].Count()
         End Sub
     End Class
 End Namespace";

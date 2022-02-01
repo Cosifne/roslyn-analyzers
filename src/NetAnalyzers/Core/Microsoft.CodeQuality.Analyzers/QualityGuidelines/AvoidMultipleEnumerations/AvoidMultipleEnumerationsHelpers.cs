@@ -31,6 +31,95 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return IsOperationEnumeratedByInvocation(operationToCheck, wellKnownSymbolsInfo);
         }
 
+        public static bool IsAvoidableInvocation(
+            IOperation operation,
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        {
+            var operationToCheck = SkipLinqChainAndConversionMethodIfNeeded(
+                operation,
+                wellKnownSymbolsInfo);
+            return IsOperationEnumeratedByAvoidableInvocation(operation, wellKnownSymbolsInfo);
+
+            static bool IsOperationEnumeratedByAvoidableInvocation(
+                IOperation operation,
+                WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            {
+                // Case 1:
+                // For C# or the method is called as an ordinary method,
+                // 'i.ElementAt(10)', is essentially 'ElementAt(i, 10)'
+                if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation grandParentInvocationOperation } parentArgumentOperation)
+                {
+                    return IsAvoidableInvocationCausingEnumerationOverArgument(
+                        grandParentInvocationOperation,
+                        parentArgumentOperation,
+                        wellKnownSymbolsInfo);
+                }
+
+                // Case 2:
+                // If the method is in reduced form.
+                // Like in VB,
+                // 'i.ElementAt(10)', 'i' is thought as the invocation instance.
+                if (operation.Parent is IInvocationOperation { TargetMethod.MethodKind: MethodKind.ReducedExtension } parentInvocationOperation
+                    && operation == parentInvocationOperation.Instance)
+                {
+                    return IsAvoidableInvocationCausingEnumerationOverInvocationInstance(parentInvocationOperation, wellKnownSymbolsInfo);
+                }
+
+                return false;
+            }
+
+            static bool IsAvoidableInvocationCausingEnumerationOverArgument(
+                IInvocationOperation invocationOperation,
+                IArgumentOperation argumentOperationToCheck,
+                WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            {
+                RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
+                if (!IsDeferredType(argumentOperationToCheck.Value.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                {
+                    return false;
+                }
+
+                var targetMethod = invocationOperation.TargetMethod;
+                var reducedFromMethod = targetMethod.ReducedFrom ?? targetMethod;
+                var originalMethod = reducedFromMethod.OriginalDefinition;
+
+                var argumentMappingParameter = targetMethod.MethodKind == MethodKind.ReducedExtension
+                    ? GetReducedFromParameter(targetMethod, argumentOperationToCheck.Parameter)
+                    : argumentOperationToCheck.Parameter.OriginalDefinition;
+
+                // Common linq method case, like ElementAt
+                if (wellKnownSymbolsInfo.AvoidableEnumerationMethods.Contains(originalMethod)
+                    && originalMethod.Parameters.Any(
+                        methodParameter => IsDeferredType(methodParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes) && methodParameter.Equals(argumentMappingParameter)))
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            static bool IsAvoidableInvocationCausingEnumerationOverInvocationInstance(IInvocationOperation invocationOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            {
+                if (invocationOperation.Instance == null
+                    || invocationOperation.TargetMethod.MethodKind != MethodKind.ReducedExtension
+                    || !IsDeferredType(invocationOperation.Instance.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                {
+                    return false;
+                }
+
+                var originalTargetMethod = invocationOperation.TargetMethod.ReducedFrom.OriginalDefinition;
+                if (originalTargetMethod.Parameters.IsEmpty
+                    || wellKnownSymbolsInfo.NoEnumerationMethods.Contains(originalTargetMethod)
+                    || wellKnownSymbolsInfo.CustomizedNoEnumerationMethods != null && wellKnownSymbolsInfo.CustomizedNoEnumerationMethods.Contains(originalTargetMethod))
+                {
+                    return false;
+                }
+
+                // Well-known linq methods, like 'ElementAt', or if the parameter's type is deferred type.
+                return wellKnownSymbolsInfo.AvoidableEnumerationMethods.Contains(originalTargetMethod);
+            }
+        }
+
         /// <summary>
         /// Skip the deferred method call and conversion operation in linq methods call chain
         /// </summary>
