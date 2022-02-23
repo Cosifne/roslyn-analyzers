@@ -23,10 +23,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             CreateLocalizableResourceString(nameof(AvoidMultipleEnumerationsTitle)),
             CreateLocalizableResourceString(nameof(AvoidMultipleEnumerationsMessage)),
             DiagnosticCategory.Performance,
-            RuleLevel.Disabled,
+            RuleLevel.BuildError,
             description: null,
             isPortedFxCopRule: false,
-            isDataflowRule: true);
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(MultipleEnumerableDescriptor);
 
